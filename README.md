@@ -136,10 +136,10 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 
 | Name | Description |
 |------|-------------|
-| cluster_ids | The CCE cluster ID |
+| cluster_id | The CCE cluster ID (When multiple clusters are created, the ID of the first cluster is returned) |
 | cluster_ids | The ID list of all CCE cluster resources |
 | clsuter_security_group_ids | The ID list of the security groups to which each CCE cluster resource belongs |
 | cluster_statuses | The status list for all CCE cluster resources |
-| node_id | The CCE node ID |
+| node_id | The CCE node ID (When multiple nodes are created, the ID of the first node is returned) |
 | node_ids | The ID list for all CCE node resources |
 | node_public_ips | The list of public IP addresses for all CCE node resources |
