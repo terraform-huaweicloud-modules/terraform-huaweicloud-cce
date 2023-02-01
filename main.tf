@@ -1,3 +1,7 @@
+data "huaweicloud_availability_zones" "this" {
+  count = length(var.availability_zones) < 1  ? 1 : 0
+}
+
 resource "huaweicloud_cce_cluster" "this" {
   count = var.is_cluster_create ? 1 : 0
 
@@ -11,6 +15,7 @@ resource "huaweicloud_cce_cluster" "this" {
   container_network_cidr = var.container_network_cidr
   service_network_cidr   = var.service_network_cidr
 
+  // Turbo configuration
   eni_subnet_id   = var.eni_subnet_id
   eni_subnet_cidr = var.eni_subnet_cidr
 
@@ -26,20 +31,23 @@ resource "huaweicloud_cce_cluster" "this" {
   extend_param                     = var.cluster_extend_params
 
   dynamic "masters" {
-    for_each = var.custom_az_used && length(var.cluster_multi_availability_zones) > 0 ? var.cluster_multi_availability_zones : slice(var.availability_zones, 0, var.az_count)
+    for_each = var.custom_az_used && length(var.cluster_multi_availability_zones) > 0 ? var.cluster_multi_availability_zones : length(var.availability_zones) > 0 ? slice(var.availability_zones, 0, var.az_count) : slice(data.huaweicloud_availability_zones.this[0].names, 0, var.az_count)
 
     content {
       availability_zone = masters.value
     }
   }
 
-  tags = var.cluster_tags
+  tags = merge(
+    { "Name" = var.name_suffix != "" ? format("%s-%s", var.node_name, var.name_suffix) : var.node_name },
+  var.cluster_tags)
 
   charging_mode = var.charging_mode
   period_unit   = var.period_unit
   period        = var.period
   auto_renew    = var.is_auto_renew
 
+  // Whether delete the related resources when container is terminal
   delete_evs = var.is_delete_evs
   delete_obs = var.is_delete_obs
   delete_sfs = var.is_delete_sfs
@@ -97,49 +105,53 @@ resource "huaweicloud_cce_node" "this" {
     content {
       volumetype    = data_volumes.value["type"]
       size          = data_volumes.value["size"]
-      extend_params = var.node_root_volume_configuration["extend_params"]
+      extend_params = data_volumes.value["extend_params"]
       kms_key_id    = data_volumes.value["kms_key_id"]
     }
   }
 
-  storage {
-    dynamic "selectors" {
-      for_each = var.node_storage_configuration["selectors"]
+  dynamic "storage" {
+    for_each = var.node_storage_configuration != null ? [var.node_storage_configuration] : []
 
-      content {
-        name                           = selectors.value["name"]
-        type                           = selectors.value["type"]
-        match_label_size               = selectors.value["match_label_size"]
-        match_label_volume_type        = selectors.value["match_label_volume_type"]
-        match_label_metadata_encrypted = selectors.value["match_label_metadata_encrypted"]
-        match_label_metadata_cmkid     = selectors.value["match_label_metadata_cmkid"]
-        match_label_count              = selectors.value["match_label_count"]
+    content {
+      dynamic "selectors" {
+        for_each = var.node_storage_configuration["selectors"]
+
+        content {
+          name                           = selectors.value["name"]
+          type                           = selectors.value["type"]
+          match_label_size               = selectors.value["match_label_size"]
+          match_label_volume_type        = selectors.value["match_label_volume_type"]
+          match_label_metadata_encrypted = selectors.value["match_label_metadata_encrypted"]
+          match_label_metadata_cmkid     = selectors.value["match_label_metadata_cmkid"]
+          match_label_count              = selectors.value["match_label_count"]
+        }
       }
-    }
 
-    dynamic "groups" {
-      for_each = var.node_storage_configuration["groups"]
+      dynamic "groups" {
+        for_each = var.node_storage_configuration["groups"]
+        content {
+          name           = groups.value["name"]
+          selector_names = groups.value["selector_names"]
+          cce_managed    = groups.value["cce_managed"]
 
-      content {
-        name           = groups.value["name"]
-        selector_names = groups.value["selector_names"]
-        cce_managed    = groups.value["cce_managed"]
+          dynamic "virtual_spaces" {
+            for_each = groups.value["virtual_spaces"]
 
-        dynamic "virtual_spaces" {
-          for_each = groups.value["virtual_spaces"]
-
-          content {
-            name            = virtual_spaces.value["name"]
-            size            = virtual_spaces.value["size"]
-            lvm_lv_type     = virtual_spaces.value["lvm_lv_type"]
-            lvm_path        = virtual_spaces.value["lvm_path"]
-            runtime_lv_type = virtual_spaces.value["runtime_lv_type"]
+            content {
+              name            = virtual_spaces.value["name"]
+              size            = virtual_spaces.value["size"]
+              lvm_lv_type     = virtual_spaces.value["lvm_lv_type"]
+              lvm_path        = virtual_spaces.value["lvm_path"]
+              runtime_lv_type = virtual_spaces.value["runtime_lv_type"]
+            }
           }
         }
       }
     }
   }
 
+  # Billing mode
   charging_mode = var.charging_mode
   period_unit   = var.period_unit
   period        = var.period

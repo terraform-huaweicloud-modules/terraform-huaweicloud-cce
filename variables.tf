@@ -224,6 +224,11 @@ variable "az_count" {
 
   type    = number
   default = 1
+
+  validation {
+    condition = var.az_count >= 1 && var.az_count <= 3
+    error_message = format("Invalid value of availability zone count, want [1, 3], but %d", var.az_count)
+  }
 }
 
 variable "cluster_tags" {
