@@ -67,6 +67,6 @@ Run `terraform destory` when you don't need them.
 | node_os_type | The operating system of the CCE node | string | null |
 | node_runtime | The runtime of the CCE node | string | null |
 | node_password | The administrator password used to login CCE node | string | null |
-| node_root_volume_configuration | The configuration of root volume of the CCE node | <pre>object({<br>  type = string<br>  size = string<br>})</pre> | <pre>{<br>  type = "SSD"<br>  size = 100}</pre> |
-| node_data_volumes_configuration | The configuration of data volumes of the CCE node | <pre>list(object({<br>  type = string<br>  size = string<br>}))</pre> | 1 |
+| node_root_volume_configuration | The configuration of root volume of the CCE node | <pre>object({<br>  type = string<br>  size = string<br>})</pre> | <pre>{<br>  type = "SSD"<br>  size = 100<br>}</pre> |
+| node_data_volumes_configuration | The configuration of data volumes of the CCE node | <pre>list(object({<br>  type = string<br>  size = string<br>}))</pre> | <pre>[<br>  {<br>    type = "SSD"<br>    size = 200<br>  }<br>]</pre> |
 | node_tags | The tags configuration of the CCE node | map(string) | <pre>{<br>  Creator = "terraform-huaweicloud-cce"<br>}</pre> |
