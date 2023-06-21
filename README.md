@@ -89,7 +89,6 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | container_network_cidr | The container network CIDR of the CCE cluster | string | null | N |
 | service_network_cidr | The service network type of the CCE cluster | string | null | N |
 | eni_subnet_id | The ID of the VPC subnet for CCE turbo resource creation | string | null | N |
-| eni_subnet_cidr | The CIDR of the VPC subnet for CCE turbo resource creation | string | null | N |
 | cluster_name | The name of the CCE cluster | string | "" | N |
 | cluster_description | The description content of the CCE cluster | string | null | N |
 | enterprise_project_id | The ID of the enterprise project to which the CCE cluster belongs | string | null | N |
