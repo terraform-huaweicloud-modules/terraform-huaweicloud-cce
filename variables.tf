@@ -135,13 +135,6 @@ variable "eni_subnet_id" {
   default = null
 }
 
-variable "eni_subnet_cidr" {
-  description = "The CIDR of the VPC subnet for CCE turbo resource creation"
-
-  type    = string
-  default = null
-}
-
 variable "cluster_name" {
   description = "The name of the CCE cluster"
 
@@ -485,3 +478,13 @@ variable "keypair_name" {
   default = null
 }
 
+######################################################################
+# Deprecated variables
+######################################################################
+
+variable "eni_subnet_cidr" {
+  description = "The CIDR of the VPC subnet for CCE turbo resource creation"
+
+  type    = string
+  default = null
+}
