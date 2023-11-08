@@ -17,7 +17,7 @@ variable "vpc_cidr_block" {
 variable "subnets_configuration" {
   description = "The configuration of the subnet resources to which the CCE resources belongs"
 
-  type    = list(object({
+  type = list(object({
     name = string
     cidr = string
   }))
@@ -83,7 +83,7 @@ variable "az_count" {
   default = 1
 
   validation {
-    condition = var.az_count >= 1 && var.az_count <= 3
+    condition     = var.az_count >= 1 && var.az_count <= 3
     error_message = format("Invalid value of availability zone count, want [1, 3], but %d", var.az_count)
   }
 }
@@ -91,7 +91,7 @@ variable "az_count" {
 variable "cluster_tags" {
   description = "The tags of CCE cluster"
 
-  type    = map(string)
+  type = map(string)
   default = {
     Creator = "terraform-huaweicloud-cce"
   }
@@ -136,8 +136,8 @@ variable "node_root_volume_configuration" {
   description = "The configuration of root volume of the CCE node"
 
   type = object({
-    type = string 
-    size = number 
+    type = string
+    size = number
   })
 
   default = {
@@ -165,7 +165,88 @@ variable "node_data_volumes_configuration" {
 variable "node_tags" {
   description = "The tags configuration of the CCE node"
 
-  type    = map(string)
+  type = map(string)
+  default = {
+    Creator = "terraform-huaweicloud-cce"
+  }
+}
+
+variable "node_pool_name" {
+  description = "The name of the CCE node pool"
+
+  type    = string
+  default = null
+}
+
+variable "node_pool_initial_ndoe_count" {
+  description = "The initial ndoe number of the CCE node pool"
+
+  type    = number
+  default = null
+}
+
+variable "node_pool_flavor" {
+  description = "The flavor ID of the CCE node pool"
+
+  type    = string
+  default = null
+}
+
+variable "node_pool_os_type" {
+  description = "Specifies the operating system of the node pool"
+
+  type    = string
+  default = null
+}
+
+variable "node_pool_runtime" {
+  description = "The runtime of the CCE node pool"
+
+  type    = string
+  default = null
+}
+
+variable "node_pool_password" {
+  description = "The service forwarding mode"
+
+  type    = string
+  default = null
+}
+
+variable "node_pool_root_volume_configuration" {
+  description = "The configuration of root volume of the CCE node pool"
+
+  type = object({
+    type = string
+    size = number
+  })
+
+  default = {
+    type = "SSD"
+    size = 100
+  }
+}
+
+variable "node_pool_data_volumes_configuration" {
+  description = "The configuration of data volumes of the CCE node pool"
+
+  type = list(object({
+    type = string
+    size = number
+  }))
+
+  default = [
+    {
+      type = "SSD"
+      size = 200
+    }
+  ]
+}
+
+variable "node_pool_tags" {
+  description = "The tags configuration of the CCE node pool"
+
+  type = map(string)
   default = {
     Creator = "terraform-huaweicloud-cce"
   }

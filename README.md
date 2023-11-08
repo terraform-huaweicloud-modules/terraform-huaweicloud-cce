@@ -44,6 +44,14 @@ module "cce_service" {
   node_root_volume_configuration  = var.cce_node_root_volume_configuration
   node_data_volumes_configuration = var.cce_node_data_volumes_configuration
   node_storage_configuration      = var.cce_node_storage_configuration
+
+  node_pool_name                       = var.node_pool_name
+  node_pool_initial_ndoe_count         = var.node_pool_initial_ndoe_count
+  node_pool_os_type                    = var.node_pool_os_type
+  node_pool_flavor                     = var.node_pool_flavor
+  node_pool_password                   = var.node_pool_password
+  node_pool_data_volumes_configuration = var.node_pool_data_volumes_configuration
+  node_pool_tags                       = var.node_pool_tags
 }
 ```
 
@@ -67,6 +75,7 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 |------|------|
 | huaweicloud_cce_cluster.this | resource |
 | huaweicloud_cce_node.this | resource |
+| huaweicloud_cce_node_pool.this | resource |
 
 ## Inputs
 
@@ -130,6 +139,30 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | node_k8s_labels | The kubernetes labels configuration of the CCE node | map(string) | null | N |
 | node_tags | The tags configuration of the CCE node | map(string) | null | N |
 | keypair_name | The name of the key-pair for encryption | string | null | N |
+| is_node_pool_create | Controls whether one or more CCE node pools should be created | bool | true | N |
+| node_pool_name | The name of the CCE node pool | string | null | N |
+| node_pool_initial_ndoe_count | The initial number of expected nodes | number | null | N |
+| node_pool_flavor | The flavor ID of the CCE node pool | string | null | N |
+| node_pool_type | The node pool type | string | null | N |
+| node_pool_os_type | The node pool OS type | string | null | N |
+| node_pool_password | The node pool password | string | null | N |
+| node_pool_ecs_group_id | The ECS server group where the CCE node pool is located | string | null | N |
+| node_pool_extend_params | The extend parameters of the CCE node pool | map(string) | null | N |
+| node_pool_scale_enable | Whether to enable auto scaling | bool | null | N |
+| node_pool_min_node_count | The minimum number of nodes allowed if auto scaling is enabled | number | null | N |
+| node_pool_max_node_count | The maximum number of nodes allowed if auto scaling is enabled | number | null | N |
+| node_pool_scale_down_cooldown_time | The time interval between two scaling operations, in minutes | number | null | N |
+| node_pool_priority | The weight of the node pool | number | null | N |
+| node_pool_security_groups | The list of custom security group IDs for the node pool | list(string) | null | N |
+| node_pool_pod_security_groups | The list of security group IDs for the pod | list(string) | null | N |
+| node_pool_initialized_conditions | The custom initialization flags | list(string) | null | N |
+| node_pool_k8s_labels | The kubernetes labels configuration of the CCE node pool | map(string) | null | N |
+| node_pool_tags | The tags configuration of the CCE node pool | map(string) | null | N |
+| node_pool_runtime | The runtime of the CCE node pool | string | null | N |
+| node_pool_taint_configuration | The anti-affinity configuration of the CCE node pool | <pre>list(object({<br>  key    = string<br>  value  = string<br>  effect = string<br>}))</pre>| [] | N |
+| node_pool_root_volume_configuration | The configuration of root volume of the CCE node pool | <pre>list(object({<br>  type          = string<br>  size          = number<br>  extend_params = map(string)<br>  kms_key_id    = string<br>  dss_pool_id   = string<br>}))</pre> | <pre>[<br>  {<br>    type = "SSD"<br>    size = 100<br>  }<br>]</pre> | N |
+| node_pool_data_volumes_configuration | The configuration of data volumes of the CCE node pool | <pre>list(object({<br>  type          = string<br>  size          = number<br>  extend_params = map(string)<br>  kms_key_id    = string<br>  dss_pool_id   = string<br>}))</pre> | <pre>[<br>  {<br>    type = "SSD"<br>    size = 200<br>  }<br>]</pre> | N |
+| node_pool_storage_configuration | The configuration of the CCE node pool storage | <pre>object({<br>  selectors = list(object({<br>    name                           = string<br>    type                           = string<br>    match_label_size               = number<br>    match_label_volume_type        = string<br>    match_label_metadata_encrypted = string<br>    match_label_metadata_cmkid     = string<br>    match_label_count              = number<br>  }))<br>  groups = list(object({<br>    name           = string<br>    selector_names = list(string)<br>    cce_managed    = string<br>    virtual_spaces = list(object({<br>      name            = string<br>      size            = string<br>      lvm_lv_type     = string<br>      lvm_path        = string<br>      runtime_lv_type = string<br>    }))<br>  }))<br>})</pre> | null | N |
 
 ## Outputs
 
@@ -139,6 +172,11 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | cluster_ids | The ID list of all CCE cluster resources |
 | clsuter_security_group_ids | The ID list of the security groups to which each CCE cluster resource belongs |
 | cluster_statuses | The status list for all CCE cluster resources |
+| cluster_kube_config_raw | The raw Kubernetes config to be used by kubectl and other compatible tools |
+| cluster_certificate_clusters | The certificate clusters |
+| cluster_certificate_users | The certificate users |
 | node_id | The CCE node ID (When multiple nodes are created, the ID of the first node is returned) |
 | node_ids | The ID list for all CCE node resources |
 | node_public_ips | The list of public IP addresses for all CCE node resources |
+| node_pool_id | The CCE node pool ID |
+| node_pool_ids | The ID list for all CCE node pool resources |
