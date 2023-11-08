@@ -42,4 +42,12 @@ module "cce_service" {
   node_password                   = var.node_password != null ? var.node_password : try(random_password.this[0].result, "")
   node_data_volumes_configuration = var.node_data_volumes_configuration
   node_tags                       = var.node_tags
+
+  node_pool_name                       = var.node_pool_name
+  node_pool_initial_ndoe_count         = var.node_pool_initial_ndoe_count
+  node_pool_os_type                    = var.node_pool_os_type
+  node_pool_flavor                     = var.node_pool_flavor
+  node_pool_password                   = var.node_pool_password != null ? var.node_pool_password : try(random_password.this[0].result, "")
+  node_pool_data_volumes_configuration = var.node_pool_data_volumes_configuration
+  node_pool_tags                       = var.node_pool_tags
 }

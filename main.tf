@@ -1,5 +1,5 @@
 data "huaweicloud_availability_zones" "this" {
-  count = length(var.availability_zones) < 1  ? 1 : 0
+  count = length(var.availability_zones) < 1 ? 1 : 0
 }
 
 resource "huaweicloud_cce_cluster" "this" {
@@ -65,7 +65,7 @@ resource "huaweicloud_cce_node" "this" {
   runtime      = var.runtime
   extend_param = var.node_extend_params
 
-  availability_zone = try(var.availability_zones[0], "")
+  availability_zone = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
   subnet_id         = var.subnet_id
   fixed_ip          = var.subnet_fixed_ip
   ecs_group_id      = var.ecs_group_id
@@ -158,7 +158,111 @@ resource "huaweicloud_cce_node" "this" {
   auto_renew    = var.is_auto_renew
 
   labels = var.node_k8s_labels
-  tags   = merge(
+  tags = merge(
     { "Name" = var.name_suffix != "" ? format("%s-%s", var.node_name, var.name_suffix) : var.node_name },
   var.node_tags)
+}
+
+
+resource "huaweicloud_cce_node_pool" "this" {
+  count = var.is_cluster_create && var.is_node_pool_create ? 1 : 0
+
+  cluster_id         = huaweicloud_cce_cluster.this[0].id
+  name               = var.name_suffix != "" ? format("%s-%s", var.node_pool_name, var.name_suffix) : var.node_pool_name
+  initial_node_count = var.node_pool_initial_ndoe_count
+  flavor_id          = var.node_pool_flavor
+  type               = var.node_pool_type
+  availability_zone  = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
+  os                 = var.node_pool_os_type
+  key_pair           = var.keypair_name
+  password           = var.node_pool_password
+  subnet_id          = var.subnet_id
+  ecs_group_id       = var.node_pool_ecs_group_id
+
+  extend_param = var.node_pool_extend_params
+
+  scall_enable             = var.node_pool_scale_enable
+  min_node_count           = var.node_pool_min_node_count
+  max_node_count           = var.node_pool_max_node_count
+  scale_down_cooldown_time = var.node_pool_scale_down_cooldown_time
+  priority                 = var.node_pool_priority
+  security_groups          = var.node_pool_security_groups
+  pod_security_groups      = var.node_pool_pod_security_groups
+  initialized_conditions   = var.node_pool_initialized_conditions
+  labels                   = var.node_pool_k8s_labels
+  tags = merge(
+    { "Name" = var.name_suffix != "" ? format("%s-%s", var.node_pool_name, var.name_suffix) : var.node_pool_name },
+  var.node_pool_tags)
+  runtime = var.node_pool_runtime
+
+  dynamic "taints" {
+    for_each = var.node_pool_taint_configuration
+
+    content {
+      key    = taints.value["key"]
+      value  = taints.value["value"]
+      effect = taints.value["effect"]
+    }
+  }
+
+  root_volume {
+    volumetype    = var.node_pool_root_volume_configuration["type"]
+    size          = var.node_pool_root_volume_configuration["size"]
+    extend_params = var.node_pool_root_volume_configuration["extend_params"]
+    kms_key_id    = var.node_pool_root_volume_configuration["kms_key_id"]
+    dss_pool_id   = var.node_pool_root_volume_configuration["dss_pool_id"]
+  }
+
+  dynamic "data_volumes" {
+    for_each = var.node_pool_data_volumes_configuration
+
+    content {
+      volumetype    = data_volumes.value["type"]
+      size          = data_volumes.value["size"]
+      extend_params = data_volumes.value["extend_params"]
+      kms_key_id    = data_volumes.value["kms_key_id"]
+      dss_pool_id   = data_volumes.value["dss_pool_id"]
+    }
+  }
+
+  dynamic "storage" {
+    for_each = var.node_storage_configuration != null ? [var.node_storage_configuration] : []
+
+    content {
+      dynamic "selectors" {
+        for_each = var.node_storage_configuration["selectors"]
+
+        content {
+          name                           = selectors.value["name"]
+          type                           = selectors.value["type"]
+          match_label_size               = selectors.value["match_label_size"]
+          match_label_volume_type        = selectors.value["match_label_volume_type"]
+          match_label_metadata_encrypted = selectors.value["match_label_metadata_encrypted"]
+          match_label_metadata_cmkid     = selectors.value["match_label_metadata_cmkid"]
+          match_label_count              = selectors.value["match_label_count"]
+        }
+      }
+
+      dynamic "groups" {
+        for_each = var.node_storage_configuration["groups"]
+        content {
+          name           = groups.value["name"]
+          selector_names = groups.value["selector_names"]
+          cce_managed    = groups.value["cce_managed"]
+
+          dynamic "virtual_spaces" {
+            for_each = groups.value["virtual_spaces"]
+
+            content {
+              name            = virtual_spaces.value["name"]
+              size            = virtual_spaces.value["size"]
+              lvm_lv_type     = virtual_spaces.value["lvm_lv_type"]
+              lvm_path        = virtual_spaces.value["lvm_path"]
+              runtime_lv_type = virtual_spaces.value["runtime_lv_type"]
+            }
+          }
+        }
+      }
+    }
+  }
 }

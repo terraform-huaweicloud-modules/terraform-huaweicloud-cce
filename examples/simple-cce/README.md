@@ -45,6 +45,7 @@ Run `terraform destory` when you don't need them.
 | huaweicloud_vpc_subnet.this[0] | resource |
 | huaweicloud_cce_cluster.this[0] | resource |
 | huaweicloud_cce_node.this[0] | resource |
+| huaweicloud_cce_node_pool.this[0] | resource |
 
 ## Inputs
 
@@ -70,3 +71,12 @@ Run `terraform destory` when you don't need them.
 | node_root_volume_configuration | The configuration of root volume of the CCE node | <pre>object({<br>  type = string<br>  size = string<br>})</pre> | <pre>{<br>  type = "SSD"<br>  size = 100<br>}</pre> |
 | node_data_volumes_configuration | The configuration of data volumes of the CCE node | <pre>list(object({<br>  type = string<br>  size = string<br>}))</pre> | <pre>[<br>  {<br>    type = "SSD"<br>    size = 200<br>  }<br>]</pre> |
 | node_tags | The tags configuration of the CCE node | map(string) | <pre>{<br>  Creator = "terraform-huaweicloud-cce"<br>}</pre> |
+| node_pool_name | The name of the CCE node pool | string | null |
+| node_pool_initial_ndoe_count | The initial ndoe number of the CCE node pool | number | null |
+| node_pool_flavor | The flavor ID of the CCE node pool | string | null |
+| node_pool_os_type | Specifies the operating system of the node pool | string | null |
+| node_pool_runtime | The runtime of the CCE node pool | string | null |
+| node_pool_password | The service forwarding mode | string | null |
+| node_pool_root_volume_configuration | The configuration of root volume of the CCE node pool | <pre>object({<br>  type = string<br>  size = string<br>})</pre> | <pre>{<br>  type = "SSD"<br>  size = 100<br>}</pre> |
+| node_pool_data_volumes_configuration | he configuration of data volumes of the CCE node pool | <pre>list(object({<br>  type = string<br>  size = string<br>}))</pre> | <pre>[<br>  {<br>    type = "SSD"<br>    size = 200<br>  }<br>]</pre> |
+| node_pool_tags | The tags configuration of the CCE node pool | map(string) | <pre>{<br>  Creator = "terraform-huaweicloud-cce"<br>}</pre> |
