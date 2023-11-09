@@ -169,7 +169,7 @@ resource "huaweicloud_cce_node_pool" "this" {
 
   cluster_id         = huaweicloud_cce_cluster.this[0].id
   name               = var.name_suffix != "" ? format("%s-%s", var.node_pool_name, var.name_suffix) : var.node_pool_name
-  initial_node_count = var.node_pool_initial_ndoe_count
+  initial_node_count = var.node_pool_initial_node_count
   flavor_id          = var.node_pool_flavor
   type               = var.node_pool_type
   availability_zone  = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]

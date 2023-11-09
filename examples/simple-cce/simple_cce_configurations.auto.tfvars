@@ -42,7 +42,7 @@ node_pool_tags = {
   Creator = "terraform-huaweicloud-cce"
 }
 
-node_pool_initial_ndoe_count = 1
+node_pool_initial_node_count = 1
 
 node_pool_name = "simple-cce-node-pool-via-modules"
 
