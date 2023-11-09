@@ -481,7 +481,7 @@ variable "node_pool_name" {
   default = null
 }
 
-variable "node_pool_initial_ndoe_count" {
+variable "node_pool_initial_node_count" {
   description = "The initial number of expected nodes"
 
   type    = number

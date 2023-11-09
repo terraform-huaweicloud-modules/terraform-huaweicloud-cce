@@ -46,7 +46,7 @@ module "cce_service" {
   node_storage_configuration      = var.cce_node_storage_configuration
 
   node_pool_name                       = var.node_pool_name
-  node_pool_initial_ndoe_count         = var.node_pool_initial_ndoe_count
+  node_pool_initial_node_count         = var.node_pool_initial_node_count
   node_pool_os_type                    = var.node_pool_os_type
   node_pool_flavor                     = var.node_pool_flavor
   node_pool_password                   = var.node_pool_password
@@ -141,7 +141,7 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | keypair_name | The name of the key-pair for encryption | string | null | N |
 | is_node_pool_create | Controls whether one or more CCE node pools should be created | bool | true | N |
 | node_pool_name | The name of the CCE node pool | string | null | N |
-| node_pool_initial_ndoe_count | The initial number of expected nodes | number | null | N |
+| node_pool_initial_node_count | The initial number of expected nodes | number | null | N |
 | node_pool_flavor | The flavor ID of the CCE node pool | string | null | N |
 | node_pool_type | The node pool type | string | null | N |
 | node_pool_os_type | The node pool OS type | string | null | N |

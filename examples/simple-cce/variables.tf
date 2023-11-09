@@ -178,8 +178,8 @@ variable "node_pool_name" {
   default = null
 }
 
-variable "node_pool_initial_ndoe_count" {
-  description = "The initial ndoe number of the CCE node pool"
+variable "node_pool_initial_node_count" {
+  description = "The initial node number of the CCE node pool"
 
   type    = number
   default = null
