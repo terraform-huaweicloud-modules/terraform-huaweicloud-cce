@@ -2,6 +2,24 @@ data "huaweicloud_availability_zones" "this" {
   count = length(var.availability_zones) < 1 ? 1 : 0
 }
 
+resource "huaweicloud_vpc_eip" "this" {
+  count = var.cluster_public_access && var.cluster_eip_address == null ? 1 : 0
+  publicip {
+    type = var.cluster_eip_type
+  }
+  bandwidth {
+    name        = var.cluster_eip_bandwidth_name != null ? var.cluster_eip_bandwidth_name : var.cluster_name
+    size        = var.cluster_eip_bandwidth_size
+    share_type  = var.cluster_eip_bandwidth_share_type
+    charge_mode = var.cluster_eip_bandwidth_charge_mode
+  }
+
+  charging_mode = var.charging_mode
+  period_unit   = var.period_unit
+  period        = var.period
+  auto_renew    = var.is_auto_renew
+}
+
 resource "huaweicloud_cce_cluster" "this" {
   count = var.is_cluster_create ? 1 : 0
 
@@ -14,7 +32,7 @@ resource "huaweicloud_cce_cluster" "this" {
   container_network_type = var.container_network_type
   container_network_cidr = var.container_network_cidr
   service_network_cidr   = var.service_network_cidr
-  eip                    = var.clusetr_eip_address
+  eip                    = var.cluster_public_access ? (var.cluster_eip_address != null ? var.cluster_eip_address : huaweicloud_vpc_eip.this[0].address) : null
 
   // Turbo configuration
   eni_subnet_id   = var.eni_subnet_id
