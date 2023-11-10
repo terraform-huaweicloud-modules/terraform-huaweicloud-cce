@@ -127,11 +127,53 @@ variable "service_network_cidr" {
   default = null
 }
 
-variable "clusetr_eip_address" {
+variable "cluster_public_access" {
+  description = "Whether to enable public access of the CCE cluster"
+
+  type    = bool
+  default = false
+}
+
+variable "cluster_eip_address" {
   description = "The EIP address of the CCE cluster"
 
   type    = string
   default = null
+}
+
+variable "cluster_eip_type" {
+  description = "The EIP type of the CCE cluster"
+
+  type    = string
+  default = "5_bgp"
+}
+
+variable "cluster_eip_bandwidth_name" {
+  description = "The EIP bandwidth name of CCE cluster"
+
+  type    = string
+  default = null
+}
+
+variable "cluster_eip_bandwidth_charge_mode" {
+  description = "The EIP bandwidth charge mode of CCE cluster"
+
+  type    = string
+  default = "traffic"
+}
+
+variable "cluster_eip_bandwidth_size" {
+  description = "The EIP bandwidth size of CCE cluster"
+
+  type    = string
+  default = 8
+}
+
+variable "cluster_eip_bandwidth_share_type" {
+  description = "The EIP bandwidth share type of CCE cluster"
+
+  type    = string
+  default = "PER"
 }
 
 # Network configuration for CCE Turbo

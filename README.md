@@ -97,7 +97,13 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | container_network_type | The container network type of the CCE cluster | string | null | N |
 | container_network_cidr | The container network CIDR of the CCE cluster | string | null | N |
 | service_network_cidr | The service network type of the CCE cluster | string | null | N |
-| clusetr_eip_address | The EIP address of the CCE cluster | string | null |
+| cluster_public_access | Whether to enable public access of the CCE cluster | bool |false | N |
+| cluster_eip_address | The EIP address of the CCE cluster | string | null | N |
+| cluster_eip_type | The EIP type of the CCE cluster | string | 5_bgp | N |
+| cluster_eip_bandwidth_name | The EIP bandwidth name of CCE cluster | string | null | N |
+| cluster_eip_bandwidth_charge_mode | The EIP bandwidth charge mode of CCE cluster | string | traffic | N |
+| cluster_eip_bandwidth_size | The EIP bandwidth size of CCE cluster | string | 8 | N |
+| cluster_eip_bandwidth_share_type | The EIP bandwidth share type of CCE cluster | string | PER | N |
 | eni_subnet_id | The ID of the VPC subnet for CCE turbo resource creation | string | null | N |
 | cluster_name | The name of the CCE cluster | string | "" | N |
 | cluster_description | The description content of the CCE cluster | string | null | N |
