@@ -14,6 +14,7 @@ resource "huaweicloud_cce_cluster" "this" {
   container_network_type = var.container_network_type
   container_network_cidr = var.container_network_cidr
   service_network_cidr   = var.service_network_cidr
+  eip                    = var.clusetr_eip_address
 
   // Turbo configuration
   eni_subnet_id   = var.eni_subnet_id
