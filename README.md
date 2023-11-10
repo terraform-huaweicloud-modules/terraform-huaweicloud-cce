@@ -97,6 +97,7 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | container_network_type | The container network type of the CCE cluster | string | null | N |
 | container_network_cidr | The container network CIDR of the CCE cluster | string | null | N |
 | service_network_cidr | The service network type of the CCE cluster | string | null | N |
+| clusetr_eip_address | The EIP address of the CCE cluster | string | null |
 | eni_subnet_id | The ID of the VPC subnet for CCE turbo resource creation | string | null | N |
 | cluster_name | The name of the CCE cluster | string | "" | N |
 | cluster_description | The description content of the CCE cluster | string | null | N |

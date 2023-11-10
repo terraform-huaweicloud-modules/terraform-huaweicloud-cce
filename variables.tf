@@ -127,6 +127,13 @@ variable "service_network_cidr" {
   default = null
 }
 
+variable "clusetr_eip_address" {
+  description = "The EIP address of the CCE cluster"
+
+  type    = string
+  default = null
+}
+
 # Network configuration for CCE Turbo
 variable "eni_subnet_id" {
   description = "The ID of the VPC subnet for CCE turbo resource creation"
