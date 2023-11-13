@@ -141,8 +141,8 @@ variable "node_root_volume_configuration" {
   })
 
   default = {
-    type = "SSD"
-    size = 100
+    type = "ESSD"
+    size = 50
   }
 }
 
@@ -156,8 +156,8 @@ variable "node_data_volumes_configuration" {
 
   default = [
     {
-      type = "SSD"
-      size = 200
+      type = "ESSD"
+      size = 100
     }
   ]
 }
@@ -222,8 +222,8 @@ variable "node_pool_root_volume_configuration" {
   })
 
   default = {
-    type = "SSD"
-    size = 100
+    type = "ESSD"
+    size = 50
   }
 }
 
@@ -237,8 +237,8 @@ variable "node_pool_data_volumes_configuration" {
 
   default = [
     {
-      type = "SSD"
-      size = 200
+      type = "ESSD"
+      size = 100
     }
   ]
 }

@@ -443,14 +443,14 @@ variable "node_root_volume_configuration" {
   description = "The configuration of root volume of the CCE node"
 
   type = object({
-    type          = optional(string, "SSD")
-    size          = optional(number, 100)
+    type          = optional(string, "ESSD")
+    size          = optional(number, 50)
     extend_params = optional(map(string), null)
   })
 
   default = {
-    type = "SSD"
-    size = 100
+    type = "ESSD"
+    size = 50
   }
 }
 
@@ -458,16 +458,16 @@ variable "node_data_volumes_configuration" {
   description = "The configuration of data volumes of the CCE node"
 
   type = list(object({
-    type          = optional(string, "SSD")
-    size          = optional(number, 200)
+    type          = optional(string, "ESSD")
+    size          = optional(number, 100)
     extend_params = optional(map(string), null)
     kms_key_id    = optional(string, null)
   }))
 
   default = [
     {
-      type = "SSD"
-      size = 200
+      type = "ESSD"
+      size = 100
     }
   ]
 }
@@ -671,16 +671,16 @@ variable "node_pool_root_volume_configuration" {
   description = "The configuration of root volume of the CCE node pool"
 
   type = object({
-    type          = optional(string, "SSD")
-    size          = optional(number, 100)
+    type          = optional(string, "ESSD")
+    size          = optional(number, 50)
     extend_params = optional(map(string), null)
     kms_key_id    = optional(string, null)
     dss_pool_id   = optional(string, null)
   })
 
   default = {
-    type = "SSD"
-    size = 100
+    type = "ESSD"
+    size = 50
   }
 }
 
@@ -688,8 +688,8 @@ variable "node_pool_data_volumes_configuration" {
   description = "The configuration of data volumes of the CCE node pool"
 
   type = list(object({
-    type          = optional(string, "SSD")
-    size          = optional(number, 200)
+    type          = optional(string, "ESSD")
+    size          = optional(number,100)
     extend_params = optional(map(string), null)
     kms_key_id    = optional(string, null)
     dss_pool_id   = optional(string, null)
@@ -697,8 +697,8 @@ variable "node_pool_data_volumes_configuration" {
 
   default = [
     {
-      type = "SSD"
-      size = 200
+      type = "ESSD"
+      size = 100
     }
   ]
 }
