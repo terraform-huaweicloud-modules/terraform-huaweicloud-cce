@@ -171,83 +171,61 @@ variable "node_tags" {
   }
 }
 
-variable "node_pool_name" {
-  description = "The name of the CCE node pool"
-
-  type    = string
-  default = null
-}
-
-variable "node_pool_initial_node_count" {
-  description = "The initial node number of the CCE node pool"
-
-  type    = number
-  default = null
-}
-
-variable "node_pool_flavor" {
-  description = "The flavor ID of the CCE node pool"
-
-  type    = string
-  default = null
-}
-
-variable "node_pool_os_type" {
-  description = "Specifies the operating system of the node pool"
-
-  type    = string
-  default = null
-}
-
-variable "node_pool_runtime" {
-  description = "The runtime of the CCE node pool"
-
-  type    = string
-  default = null
-}
-
-variable "node_pool_password" {
-  description = "The service forwarding mode"
-
-  type    = string
-  default = null
-}
-
-variable "node_pool_root_volume_configuration" {
-  description = "The configuration of root volume of the CCE node pool"
-
-  type = object({
-    type = string
-    size = number
-  })
-
-  default = {
-    type = "ESSD"
-    size = 50
-  }
-}
-
-variable "node_pool_data_volumes_configuration" {
-  description = "The configuration of data volumes of the CCE node pool"
-
+variable "node_pools_configuration" {
+  description = "The configuration of the CCE node pools"
   type = list(object({
-    type = string
-    size = number
+    name               = optional(string, null)
+    initial_node_count = optional(number, null)
+    flavor_id          = optional(string, null)
+    type               = optional(string, null)
+    os                 = optional(string, null)
+    tags               = optional(map(string), null)
+    runtime            = optional(string, null)
+    password           = optional(string, null)
+
+    extend_params = optional(object({
+      max_pods            = optional(number, null)
+      docker_base_size    = optional(number, null)
+      preinstall          = optional(string, null)
+      postinstall         = optional(string, null)
+      node_image_id       = optional(string, null)
+      node_multi_queue    = optional(string, null)
+      nic_threshold       = optional(string, null)
+      agency_name         = optional(string, null)
+      kube_reserved_mem   = optional(number, null)
+      system_reserved_mem = optional(number, null)
+      }),
+      null
+    )
+
+    root_volume = optional(object({
+      type          = optional(string, "ESSD")
+      size          = optional(number, 50)
+      extend_params = optional(map(string), null)
+      kms_key_id    = optional(string, null)
+      dss_pool_id   = optional(string, null)
+      }),
+      {
+        type = "SSD"
+        size = 100
+      }
+    )
+
+    data_volumes = optional(list(object({
+      type          = optional(string, "ESSD")
+      size          = optional(number, 100)
+      extend_params = optional(map(string), null)
+      kms_key_id    = optional(string, null)
+      dss_pool_id   = optional(string, null)
+      })),
+      [
+        {
+          type = "SSD"
+          size = 200
+        }
+      ]
+    )
   }))
 
-  default = [
-    {
-      type = "ESSD"
-      size = 100
-    }
-  ]
-}
-
-variable "node_pool_tags" {
-  description = "The tags configuration of the CCE node pool"
-
-  type = map(string)
-  default = {
-    Creator = "terraform-huaweicloud-cce"
-  }
+  default = []
 }

@@ -38,22 +38,24 @@ node_data_volumes_configuration = [
   }
 ]
 
-node_pool_tags = {
-  Creator = "terraform-huaweicloud-cce"
-}
-
-node_pool_initial_node_count = 1
-
-node_pool_name = "simple-cce-node-pool-via-modules"
-
-node_pool_flavor = "s6.large.2"
-
-node_pool_os_type = "EulerOS 2.9"
-
-node_pool_data_volumes_configuration = [
+node_pools_configuration = [
   {
-    type = "SSD"
-    size = 100
+    name               = "simple-cce-node-pool-via-modules"
+    flavor_id          = "s6.large.2"
+    os                 = "EulerOS 2.9"
+    initial_node_count = 1
+    password           = "Test@123"
+    tags = {
+      Creator = "terraform-huaweicloud-cce"
+    }
+
+    data_volumes = [{
+      type = "ESSD"
+      size = 100
+    }]
+
+    extend_params = {
+      max_pods = 5
+    }
   }
 ]
-

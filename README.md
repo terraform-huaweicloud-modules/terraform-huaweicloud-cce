@@ -45,13 +45,27 @@ module "cce_service" {
   node_data_volumes_configuration = var.cce_node_data_volumes_configuration
   node_storage_configuration      = var.cce_node_storage_configuration
 
-  node_pool_name                       = var.node_pool_name
-  node_pool_initial_node_count         = var.node_pool_initial_node_count
-  node_pool_os_type                    = var.node_pool_os_type
-  node_pool_flavor                     = var.node_pool_flavor
-  node_pool_password                   = var.node_pool_password
-  node_pool_data_volumes_configuration = var.node_pool_data_volumes_configuration
-  node_pool_tags                       = var.node_pool_tags
+  node_pools_configuration = [
+    {
+      name               = "simple-cce-node-pool-via-modules"
+      flavor_id          = "s6.large.2"
+      os                 = "EulerOS 2.9"
+      initial_node_count = 1
+      password           = "Test@123"
+      tags = {
+        Creator = "terraform-huaweicloud-cce"
+      }
+
+      data_volumes = [{
+        type = "ESSD"
+        size = 100
+      }]
+
+      extend_params = {
+        max_pods = 5
+      }
+    }
+  ]
 }
 ```
 
@@ -146,30 +160,7 @@ Full contributing [guidelines are covered here](.github/how_to_contribute.md).
 | node_k8s_labels | The kubernetes labels configuration of the CCE node | map(string) | null | N |
 | node_tags | The tags configuration of the CCE node | map(string) | null | N |
 | keypair_name | The name of the key-pair for encryption | string | null | N |
-| is_node_pool_create | Controls whether one or more CCE node pools should be created | bool | true | N |
-| node_pool_name | The name of the CCE node pool | string | null | N |
-| node_pool_initial_node_count | The initial number of expected nodes | number | null | N |
-| node_pool_flavor | The flavor ID of the CCE node pool | string | null | N |
-| node_pool_type | The node pool type | string | null | N |
-| node_pool_os_type | The node pool OS type | string | null | N |
-| node_pool_password | The node pool password | string | null | N |
-| node_pool_ecs_group_id | The ECS server group where the CCE node pool is located | string | null | N |
-| node_pool_extend_params | The extend parameters of the CCE node pool | map(string) | null | N |
-| node_pool_scale_enable | Whether to enable auto scaling | bool | null | N |
-| node_pool_min_node_count | The minimum number of nodes allowed if auto scaling is enabled | number | null | N |
-| node_pool_max_node_count | The maximum number of nodes allowed if auto scaling is enabled | number | null | N |
-| node_pool_scale_down_cooldown_time | The time interval between two scaling operations, in minutes | number | null | N |
-| node_pool_priority | The weight of the node pool | number | null | N |
-| node_pool_security_groups | The list of custom security group IDs for the node pool | list(string) | null | N |
-| node_pool_pod_security_groups | The list of security group IDs for the pod | list(string) | null | N |
-| node_pool_initialized_conditions | The custom initialization flags | list(string) | null | N |
-| node_pool_k8s_labels | The kubernetes labels configuration of the CCE node pool | map(string) | null | N |
-| node_pool_tags | The tags configuration of the CCE node pool | map(string) | null | N |
-| node_pool_runtime | The runtime of the CCE node pool | string | null | N |
-| node_pool_taint_configuration | The anti-affinity configuration of the CCE node pool | <pre>list(object({<br>  key    = string<br>  value  = string<br>  effect = string<br>}))</pre>| [] | N |
-| node_pool_root_volume_configuration | The configuration of root volume of the CCE node pool | <pre>object({<br>  type          = string<br>  size          = number<br>  extend_params = map(string)<br>  kms_key_id    = string<br>  dss_pool_id   = string<br>})</pre> | <pre>{<br>  type = "ESSD"<br>  size = 50<br>}</pre> | N |
-| node_pool_data_volumes_configuration | The configuration of data volumes of the CCE node pool | <pre>list(object({<br>  type          = string<br>  size          = number<br>  extend_params = map(string)<br>  kms_key_id    = string<br>  dss_pool_id   = string<br>}))</pre> | <pre>[<br>  {<br>    type = "ESSD"<br>    size = 100<br>  }<br>]</pre> | N |
-| node_pool_storage_configuration | The configuration of the CCE node pool storage | <pre>object({<br>  selectors = list(object({<br>    name                           = string<br>    type                           = string<br>    match_label_size               = number<br>    match_label_volume_type        = string<br>    match_label_metadata_encrypted = string<br>    match_label_metadata_cmkid     = string<br>    match_label_count              = number<br>  }))<br>  groups = list(object({<br>    name           = string<br>    selector_names = list(string)<br>    cce_managed    = string<br>    virtual_spaces = list(object({<br>      name            = string<br>      size            = string<br>      lvm_lv_type     = string<br>      lvm_path        = string<br>      runtime_lv_type = string<br>    }))<br>  }))<br>})</pre> | null | N |
+| node_pools_configuration | The configuration of the CCE node pools | <pre>type = list(object({<br>  name                     = optional(string, null)<br>  initial_node_count       = optional(number, null)<br>  flavor_id                = optional(string, null)<br>  type                     = optional(string, null)<br>  os                       = optional(string, null)<br>  key_pair                 = optional(string, null)<br>  password                 = optional(string, null)<br>  ecs_group_id             = optional(string, null)<br>  extend_param             = optional(map(string), null)<br>  scale_enable             = optional(bool, null)<br>  min_node_count           = optional(number, null)<br>  max_node_count           = optional(number, null)<br>  scale_down_cooldown_time = optional(number, null)<br>  priority                 = optional(number, null)<br>  security_groups          = optional(list(string), null)<br>  pod_security_groups      = optional(list(string), null)<br>  initialized_conditions   = optional(list(string), null)<br>  labels                   = optional(map(string), null)<br>  tags                     = optional(map(string), null)<br>  runtime                  = optional(string, null)<br><br>  extend_params = optional(object({<br>    max_pods            = optional(number, null)<br>    docker_base_size    = optional(number, null)<br>    preinstall          = optional(string, null)<br>    postinstall         = optional(string, null)<br>    node_image_id       = optional(string, null)<br>    node_multi_queue    = optional(string, null)<br>    nic_threshold       = optional(string, null)<br>    agency_name         = optional(string, null)<br>    kube_reserved_mem   = optional(number, null)<br>    system_reserved_mem = optional(number, null)<br>    }),<br>    null<br>  )<br><br>  taints = optional(list(object({<br>    key    = string<br>    value  = string<br>    effect = string<br>    })),<br>    []<br>  )<br><br>  root_volume = optional(object({<br>    type          = optional(string, "ESSD")<br>    size          = optional(number, 50)<br>    extend_params = optional(map(string), null)<br>    kms_key_id    = optional(string, null)<br>    dss_pool_id   = optional(string, null)<br>    }),<br>    {<br>      type = "ESSD"<br>      size = 50<br>    }<br>  )<br><br>  data_volumes = optional(list(object({<br>    type          = optional(string, "ESSD")<br>    size          = optional(number, 100)<br>    extend_params = optional(map(string), null)<br>    kms_key_id    = optional(string, null)<br>    dss_pool_id   = optional(string, null)<br>    })),<br>    [<br>      {<br>        type = "ESSD"<br>        size = 100<br>      }<br>    ]<br>  )<br><br>  storage = optional(object({<br>    selectors = optional(list(object({<br>      name                           = string<br>      type                           = optional(string, "evs")<br>      match_label_size               = optional(number, 100)<br>      match_label_volume_type        = optional(string, null)<br>      match_label_metadata_encrypted = optional(string, null)<br>      match_label_metadata_cmkid     = optional(string, null)<br>      match_label_count              = optional(number, null)<br>    })), null)<br>    groups = optional(list(object({<br>      name           = string<br>      selector_names = list(string)<br>      cce_managed    = optional(string, null)<br>      virtual_spaces = list(object({<br>        name            = string<br>        size            = string<br>        lvm_lv_type     = optional(string, null)<br>        lvm_path        = optional(string, null)<br>        runtime_lv_type = optional(string, null)<br>      }))<br>    })), null)<br>    }),<br>    null<br>  )<br>}))</pre> | [] | N |
 
 ## Outputs
 
