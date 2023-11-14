@@ -2,6 +2,13 @@ data "huaweicloud_availability_zones" "this" {
   count = length(var.availability_zones) < 1 ? 1 : 0
 }
 
+data "huaweicloud_compute_flavors" "this" {
+  availability_zone = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
+  performance_type  = "normal"
+  cpu_core_count    = 2
+  memory_size       = 4
+}
+
 resource "huaweicloud_vpc_eip" "this" {
   count = var.cluster_public_access && var.cluster_eip_address == null ? 1 : 0
   publicip {
@@ -50,7 +57,7 @@ resource "huaweicloud_cce_cluster" "this" {
   extend_param                     = var.cluster_extend_params
 
   dynamic "masters" {
-    for_each = var.custom_az_used && length(var.cluster_multi_availability_zones) > 0 ? var.cluster_multi_availability_zones : length(var.availability_zones) > 0 ? slice(var.availability_zones, 0, var.az_count) : slice(data.huaweicloud_availability_zones.this[0].names, 0, var.az_count)
+    for_each = length(var.cluster_multi_availability_zones) > 0 ? var.cluster_multi_availability_zones : length(var.availability_zones) > 0 ? slice(var.availability_zones, 0, var.az_count) : slice(data.huaweicloud_availability_zones.this[0].names, 0, var.az_count)
 
     content {
       availability_zone = masters.value
@@ -189,11 +196,11 @@ resource "huaweicloud_cce_node_pool" "this" {
   cluster_id               = huaweicloud_cce_cluster.this[0].id
   name                     = var.name_suffix != "" ? format("%s-%s", lookup(element(var.node_pools_configuration, count.index), "name"), var.name_suffix) : lookup(element(var.node_pools_configuration, count.index), "name")
   initial_node_count       = lookup(element(var.node_pools_configuration, count.index), "initial_node_count")
-  flavor_id                = lookup(element(var.node_pools_configuration, count.index), "flavor_id")
+  flavor_id                = lookup(element(var.node_pools_configuration, count.index), "flavor_id") != null ? lookup(element(var.node_pools_configuration, count.index), "flavor_id") : data.huaweicloud_compute_flavors.this.ids[0]
   type                     = lookup(element(var.node_pools_configuration, count.index), "type")
   availability_zone        = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
   os                       = lookup(element(var.node_pools_configuration, count.index), "os")
-  key_pair                 = var.keypair_name
+  key_pair                 = lookup(element(var.node_pools_configuration, count.index), "key_pair")
   password                 = lookup(element(var.node_pools_configuration, count.index), "password")
   subnet_id                = var.subnet_id
   ecs_group_id             = lookup(element(var.node_pools_configuration, count.index), "ecs_group_id")
@@ -207,9 +214,7 @@ resource "huaweicloud_cce_node_pool" "this" {
   initialized_conditions   = lookup(element(var.node_pools_configuration, count.index), "initialized_conditions")
   labels                   = lookup(element(var.node_pools_configuration, count.index), "labels")
   runtime                  = lookup(element(var.node_pools_configuration, count.index), "runtime")
-  tags = merge(
-    { "Name" = var.name_suffix != "" ? format("%s-%s", lookup(element(var.node_pools_configuration, count.index), "name"), var.name_suffix) : lookup(element(var.node_pools_configuration, count.index), "name"), },
-  lookup(element(var.node_pools_configuration, count.index), "tags"))
+  tags                     = lookup(element(var.node_pools_configuration, count.index), "tags")
 
   dynamic "extend_params" {
     for_each = lookup(element(var.node_pools_configuration, count.index), "extend_params") != null ? [lookup(element(var.node_pools_configuration, count.index), "extend_params")] : []

@@ -45,17 +45,5 @@ node_pools_configuration = [
     os                 = "EulerOS 2.9"
     initial_node_count = 1
     password           = "Test@123"
-    tags = {
-      Creator = "terraform-huaweicloud-cce"
-    }
-
-    data_volumes = [{
-      type = "ESSD"
-      size = 100
-    }]
-
-    extend_params = {
-      max_pods = 5
-    }
   }
 ]
