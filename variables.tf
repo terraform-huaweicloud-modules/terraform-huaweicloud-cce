@@ -247,13 +247,6 @@ variable "cluster_extend_params" {
   default = null
 }
 
-variable "custom_az_used" {
-  description = "Whether to use a custom list of Availability Zones"
-
-  type    = bool
-  default = false
-}
-
 variable "cluster_multi_availability_zones" {
   description = "The list of availability zones where the CCE cluster is located"
 
@@ -522,10 +515,10 @@ variable "node_pools_configuration" {
   description = "The configuration of the CCE node pools"
   type = list(object({
     name                     = optional(string, null)
-    initial_node_count       = optional(number, null)
+    initial_node_count       = optional(number, 1)
     flavor_id                = optional(string, null)
     type                     = optional(string, null)
-    os                       = optional(string, null)
+    os                       = optional(string, "EulerOS 2.9")
     key_pair                 = optional(string, null)
     password                 = optional(string, null)
     ecs_group_id             = optional(string, null)
