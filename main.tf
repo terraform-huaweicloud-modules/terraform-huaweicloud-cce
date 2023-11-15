@@ -42,8 +42,7 @@ resource "huaweicloud_cce_cluster" "this" {
   eip                    = var.cluster_public_access ? (var.cluster_eip_address != null ? var.cluster_eip_address : huaweicloud_vpc_eip.this[0].address) : null
 
   // Turbo configuration
-  eni_subnet_id   = var.eni_subnet_id
-  eni_subnet_cidr = var.eni_subnet_cidr
+  eni_subnet_id = length(var.eni_subnet_ids) > 0 ? join(",", var.eni_subnet_ids) : null
 
   name                  = var.name_suffix != "" ? format("%s-%s", var.cluster_name, var.name_suffix) : var.cluster_name
   description           = var.cluster_description
@@ -57,16 +56,14 @@ resource "huaweicloud_cce_cluster" "this" {
   extend_param                     = var.cluster_extend_params
 
   dynamic "masters" {
-    for_each = length(var.cluster_multi_availability_zones) > 0 ? var.cluster_multi_availability_zones : length(var.availability_zones) > 0 ? slice(var.availability_zones, 0, var.az_count) : slice(data.huaweicloud_availability_zones.this[0].names, 0, var.az_count)
+    for_each = length(var.cluster_multi_availability_zones) > 0 ? var.cluster_multi_availability_zones : length(var.availability_zones) > 0 ? var.availability_zones : slice(data.huaweicloud_availability_zones.this[0].names, 0, 3)
 
     content {
       availability_zone = masters.value
     }
   }
 
-  tags = merge(
-    { "Name" = var.name_suffix != "" ? format("%s-%s", var.node_name, var.name_suffix) : var.node_name },
-  var.cluster_tags)
+  tags = var.cluster_tags
 
   charging_mode = var.charging_mode
   period_unit   = var.period_unit
@@ -82,29 +79,47 @@ resource "huaweicloud_cce_cluster" "this" {
 }
 
 resource "huaweicloud_cce_node" "this" {
-  count = var.is_cluster_create && var.is_node_create ? 1 : 0
+  count = length(var.nodes_configuration)
 
-  cluster_id   = huaweicloud_cce_cluster.this[0].id
-  name         = var.name_suffix != "" ? format("%s-%s", var.node_name, var.name_suffix) : var.node_name
-  flavor_id    = var.node_flavor
-  os           = var.os_type
-  runtime      = var.runtime
-  extend_param = var.node_extend_params
-
+  cluster_id        = huaweicloud_cce_cluster.this[0].id
+  name              = var.name_suffix != "" ? format("%s-%s", lookup(element(var.nodes_configuration, count.index), "name"), var.name_suffix) : lookup(element(var.nodes_configuration, count.index), "name")
+  flavor_id         = lookup(element(var.nodes_configuration, count.index), "flavor_id") != null ? lookup(element(var.nodes_configuration, count.index), "flavor_id") : data.huaweicloud_compute_flavors.this.ids[0]
+  os                = lookup(element(var.nodes_configuration, count.index), "os")
+  runtime           = lookup(element(var.nodes_configuration, count.index), "runtime")
   availability_zone = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
   subnet_id         = var.subnet_id
-  fixed_ip          = var.subnet_fixed_ip
-  ecs_group_id      = var.ecs_group_id
-  max_pods          = var.max_pods_number
+  fixed_ip          = lookup(element(var.nodes_configuration, count.index), "fixed_ip")
+  ecs_group_id      = lookup(element(var.nodes_configuration, count.index), "ecs_group_id")
+  key_pair          = lookup(element(var.nodes_configuration, count.index), "key_pair")
+  password          = lookup(element(var.nodes_configuration, count.index), "password")
+  labels            = lookup(element(var.nodes_configuration, count.index), "labels")
+  tags              = lookup(element(var.nodes_configuration, count.index), "tags")
 
-  iptype                = var.eip_type
-  eip_id                = var.eip_id
-  bandwidth_charge_mode = var.bandwidth_charge_mode
-  bandwidth_size        = var.bandwidth_size
-  sharetype             = var.bandwidth_share_type
+  eip_id                = lookup(element(var.nodes_configuration, count.index), "eip_id")
+  iptype                = lookup(element(var.nodes_configuration, count.index), "iptype")
+  bandwidth_charge_mode = lookup(element(var.nodes_configuration, count.index), "bandwidth_charge_mode")
+  bandwidth_size        = lookup(element(var.nodes_configuration, count.index), "bandwidth_size")
+  sharetype             = lookup(element(var.nodes_configuration, count.index), "sharetype")
+
+  dynamic "extend_params" {
+    for_each = lookup(element(var.nodes_configuration, count.index), "extend_params") != null ? [lookup(element(var.nodes_configuration, count.index), "extend_params")] : []
+
+    content {
+      max_pods            = extend_params.value["max_pods"]
+      docker_base_size    = extend_params.value["docker_base_size"]
+      preinstall          = extend_params.value["preinstall"]
+      postinstall         = extend_params.value["postinstall"]
+      node_image_id       = extend_params.value["node_image_id"]
+      node_multi_queue    = extend_params.value["node_multi_queue"]
+      nic_threshold       = extend_params.value["nic_threshold"]
+      agency_name         = extend_params.value["agency_name"]
+      kube_reserved_mem   = extend_params.value["kube_reserved_mem"]
+      system_reserved_mem = extend_params.value["system_reserved_mem"]
+    }
+  }
 
   dynamic "taints" {
-    for_each = var.node_taint_configuration
+    for_each = lookup(element(var.nodes_configuration, count.index), "taints")
 
     content {
       key    = taints.value["key"]
@@ -113,35 +128,36 @@ resource "huaweicloud_cce_node" "this" {
     }
   }
 
-  key_pair = var.keypair_name
-  password = var.node_password
+  dynamic "root_volume" {
+    for_each = [lookup(element(var.nodes_configuration, count.index), "root_volume")]
 
-  preinstall  = var.pre_install_script
-  postinstall = var.post_install_script
-
-  root_volume {
-    volumetype    = var.node_root_volume_configuration["type"]
-    size          = var.node_root_volume_configuration["size"]
-    extend_params = var.node_root_volume_configuration["extend_params"]
+    content {
+      volumetype    = root_volume.value["type"]
+      size          = root_volume.value["size"]
+      extend_params = root_volume.value["extend_params"]
+      kms_key_id    = root_volume.value["kms_key_id"]
+      dss_pool_id   = root_volume.value["dss_pool_id"]
+    }
   }
 
   dynamic "data_volumes" {
-    for_each = var.node_data_volumes_configuration
+    for_each = lookup(element(var.nodes_configuration, count.index), "data_volumes")
 
     content {
       volumetype    = data_volumes.value["type"]
       size          = data_volumes.value["size"]
       extend_params = data_volumes.value["extend_params"]
       kms_key_id    = data_volumes.value["kms_key_id"]
+      dss_pool_id   = data_volumes.value["dss_pool_id"]
     }
   }
 
   dynamic "storage" {
-    for_each = var.node_storage_configuration != null ? [var.node_storage_configuration] : []
+    for_each = lookup(element(var.nodes_configuration, count.index), "storage") != null ? [lookup(element(var.nodes_configuration, count.index), "storage")] : []
 
     content {
       dynamic "selectors" {
-        for_each = var.node_storage_configuration["selectors"]
+        for_each = storage.value["selectors"]
 
         content {
           name                           = selectors.value["name"]
@@ -155,7 +171,7 @@ resource "huaweicloud_cce_node" "this" {
       }
 
       dynamic "groups" {
-        for_each = var.node_storage_configuration["groups"]
+        for_each = storage.value["groups"]
         content {
           name           = groups.value["name"]
           selector_names = groups.value["selector_names"]
@@ -182,11 +198,6 @@ resource "huaweicloud_cce_node" "this" {
   period_unit   = var.period_unit
   period        = var.period
   auto_renew    = var.is_auto_renew
-
-  labels = var.node_k8s_labels
-  tags = merge(
-    { "Name" = var.name_suffix != "" ? format("%s-%s", var.node_name, var.name_suffix) : var.node_name },
-  var.node_tags)
 }
 
 
@@ -243,12 +254,17 @@ resource "huaweicloud_cce_node_pool" "this" {
     }
   }
 
-  root_volume {
-    volumetype    = lookup(element(var.node_pools_configuration, count.index), "root_volume")["type"]
-    size          = lookup(element(var.node_pools_configuration, count.index), "root_volume")["size"]
-    extend_params = lookup(element(var.node_pools_configuration, count.index), "root_volume")["extend_params"]
-    kms_key_id    = lookup(element(var.node_pools_configuration, count.index), "root_volume")["kms_key_id"]
-    dss_pool_id   = lookup(element(var.node_pools_configuration, count.index), "root_volume")["dss_pool_id"]
+
+  dynamic "root_volume" {
+    for_each = [lookup(element(var.node_pools_configuration, count.index), "root_volume")]
+
+    content {
+      volumetype    = root_volume.value["type"]
+      size          = root_volume.value["size"]
+      extend_params = root_volume.value["extend_params"]
+      kms_key_id    = root_volume.value["kms_key_id"]
+      dss_pool_id   = root_volume.value["dss_pool_id"]
+    }
   }
 
   dynamic "data_volumes" {
