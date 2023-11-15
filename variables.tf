@@ -60,13 +60,6 @@ variable "subnet_id" {
   default = null
 }
 
-variable "subnet_fixed_ip" {
-  description = "The fixed IP of the related subnet of the CCE node"
-
-  type    = string
-  default = null
-}
-
 variable "availability_zones" {
   description = "The list of availability zones where the CCE resources are located"
 
@@ -177,11 +170,11 @@ variable "cluster_eip_bandwidth_share_type" {
 }
 
 # Network configuration for CCE Turbo
-variable "eni_subnet_id" {
+variable "eni_subnet_ids" {
   description = "The ID of the VPC subnet for CCE turbo resource creation"
 
-  type    = string
-  default = null
+  type    = list(string)
+  default = []
 }
 
 variable "cluster_name" {
@@ -254,18 +247,6 @@ variable "cluster_multi_availability_zones" {
   default = []
 }
 
-variable "az_count" {
-  description = "The number of availability zones which will resource used"
-
-  type    = number
-  default = 1
-
-  validation {
-    condition     = var.az_count >= 1 && var.az_count <= 3
-    error_message = format("Invalid value of availability zone count, want [1, 3], but %d", var.az_count)
-  }
-}
-
 variable "cluster_tags" {
   description = "The tags of CCE cluster"
 
@@ -308,207 +289,108 @@ variable "is_delete_all" {
   default = null
 }
 
-
-
-variable "is_node_create" {
-  description = "Controls whether one or more CCE nodes should be created"
-
-  type    = bool
-  default = true
-}
-
-variable "node_name" {
-  description = "The name of the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "node_flavor" {
-  description = "The flavor ID of the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "os_type" {
-  description = "The service forwarding mode"
-
-  type    = string
-  default = null
-}
-
-variable "runtime" {
-  description = "The runtime of the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "node_extend_params" {
-  description = "The extend parameters of the CCE node"
-
-  type    = map(string)
-  default = null
-}
-
-variable "ecs_group_id" {
-  description = "The ECS server group where the CCE node is located"
-
-  type    = string
-  default = null
-}
-
-variable "max_pods_number" {
-  description = "The maximum number of CCE pods allowed to be created"
-
-  type    = string
-  default = null
-}
-
-variable "eip_id" {
-  description = "The elastic IP associated with the CCE node"
-
-  type    = string
-  default = null
-}
-
-# If the EIP type is not empty, the bandwidth size and sharing type must be configured
-variable "eip_type" {
-  description = "The type of the EIP associated with the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "bandwidth_charge_mode" {
-  description = "The charge mode of the bandwidth bound to the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "bandwidth_size" {
-  description = "The size of the bandwidth bound to the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "bandwidth_share_type" {
-  description = "The share type of the bandwidth bound to the CCE node"
-
-  type    = string
-  default = null
-}
-
-variable "node_taint_configuration" {
-  description = "The anti-affinity configuration of the CCE node"
-
+variable "nodes_configuration" {
+  description = "The configuration of the CCE nodes"
   type = list(object({
-    key    = string
-    value  = string
-    effect = string
+    name                   = optional(string, null)
+    flavor_id              = optional(string, null)
+    os                     = optional(string, "EulerOS 2.9")
+    key_pair               = optional(string, null)
+    password               = optional(string, null)
+    private_key            = optional(string, null)
+    fixed_ip               = optional(string, null)
+    ecs_group_id           = optional(string, null)
+    dedicated_host_id      = optional(string, null)
+    initialized_conditions = optional(list(string), null)
+    labels                 = optional(map(string), null)
+    tags                   = optional(map(string), null)
+    runtime                = optional(string, null)
+
+    eip_id                = optional(string, null)
+    iptype                = optional(string, null)
+    bandwidth_charge_mode = optional(string, null)
+    bandwidth_size        = optional(string, null)
+    sharetype             = optional(string, null)
+
+    extend_params = optional(object({
+      max_pods            = optional(number, null)
+      docker_base_size    = optional(number, null)
+      preinstall          = optional(string, null)
+      postinstall         = optional(string, null)
+      node_image_id       = optional(string, null)
+      node_multi_queue    = optional(string, null)
+      nic_threshold       = optional(string, null)
+      agency_name         = optional(string, null)
+      kube_reserved_mem   = optional(number, null)
+      system_reserved_mem = optional(number, null)
+      }),
+      null
+    )
+
+    taints = optional(list(object({
+      key    = string
+      value  = string
+      effect = string
+      })),
+      []
+    )
+
+    root_volume = optional(object({
+      type          = optional(string, "SSD")
+      size          = optional(number, 50)
+      extend_params = optional(map(string), null)
+      kms_key_id    = optional(string, null)
+      dss_pool_id   = optional(string, null)
+      }),
+      {
+        type = "SSD"
+        size = 50
+      }
+    )
+
+    data_volumes = optional(list(object({
+      type          = optional(string, "SSD")
+      size          = optional(number, 100)
+      extend_params = optional(map(string), null)
+      kms_key_id    = optional(string, null)
+      dss_pool_id   = optional(string, null)
+      })),
+      [
+        {
+          type = "SSD"
+          size = 100
+        }
+      ]
+    )
+
+    storage = optional(object({
+      selectors = optional(list(object({
+        name                           = string
+        type                           = optional(string, "evs")
+        match_label_size               = optional(number, 100)
+        match_label_volume_type        = optional(string, null)
+        match_label_metadata_encrypted = optional(string, null)
+        match_label_metadata_cmkid     = optional(string, null)
+        match_label_count              = optional(number, null)
+      })), null)
+      groups = optional(list(object({
+        name           = string
+        selector_names = list(string)
+        cce_managed    = optional(string, null)
+        virtual_spaces = list(object({
+          name            = string
+          size            = string
+          lvm_lv_type     = optional(string, null)
+          lvm_path        = optional(string, null)
+          runtime_lv_type = optional(string, null)
+        }))
+      })), null)
+      }),
+      null
+    )
   }))
+
   default = []
-}
-
-variable "node_password" {
-  description = "The service forwarding mode"
-
-  type    = string
-  default = null
-}
-
-variable "pre_install_script" {
-  description = "The script to be executed before installation"
-
-  type    = string
-  default = null
-}
-
-variable "post_install_script" {
-  description = "The script to be executed after installation"
-
-  type    = string
-  default = null
-}
-
-variable "node_root_volume_configuration" {
-  description = "The configuration of root volume of the CCE node"
-
-  type = object({
-    type          = optional(string, "ESSD")
-    size          = optional(number, 50)
-    extend_params = optional(map(string), null)
-  })
-
-  default = {
-    type = "ESSD"
-    size = 50
-  }
-}
-
-variable "node_data_volumes_configuration" {
-  description = "The configuration of data volumes of the CCE node"
-
-  type = list(object({
-    type          = optional(string, "ESSD")
-    size          = optional(number, 100)
-    extend_params = optional(map(string), null)
-    kms_key_id    = optional(string, null)
-  }))
-
-  default = [
-    {
-      type = "ESSD"
-      size = 100
-    }
-  ]
-}
-
-variable "node_storage_configuration" {
-  description = "The configuration of the CCE node storage"
-
-  type = object({
-    selectors = optional(list(object({
-      name                           = string
-      type                           = optional(string, "evs")
-      match_label_size               = optional(number, 100)
-      match_label_volume_type        = optional(string, null)
-      match_label_metadata_encrypted = optional(string, null)
-      match_label_metadata_cmkid     = optional(string, null)
-      match_label_count              = optional(number, null)
-    })), null)
-    groups = optional(list(object({
-      name           = string
-      selector_names = list(string)
-      cce_managed    = optional(string, null)
-      virtual_spaces = list(object({
-        name            = string
-        size            = string
-        lvm_lv_type     = optional(string, null)
-        lvm_path        = optional(string, null)
-        runtime_lv_type = optional(string, null)
-      }))
-    })), null)
-  })
-
-  default = null
-}
-
-variable "node_k8s_labels" {
-  description = "The kubernetes labels configuration of the CCE node"
-
-  type    = map(string)
-  default = null
-}
-
-variable "node_tags" {
-  description = "The tags configuration of the CCE node"
-
-  type    = map(string)
-  default = null
 }
 
 variable "node_pools_configuration" {
@@ -522,7 +404,6 @@ variable "node_pools_configuration" {
     key_pair                 = optional(string, null)
     password                 = optional(string, null)
     ecs_group_id             = optional(string, null)
-    extend_param             = optional(map(string), null)
     scale_enable             = optional(bool, null)
     min_node_count           = optional(number, null)
     max_node_count           = optional(number, null)
@@ -559,20 +440,20 @@ variable "node_pools_configuration" {
     )
 
     root_volume = optional(object({
-      type          = optional(string, "ESSD")
+      type          = optional(string, "SSD")
       size          = optional(number, 50)
       extend_params = optional(map(string), null)
       kms_key_id    = optional(string, null)
       dss_pool_id   = optional(string, null)
       }),
       {
-        type = "ESSD"
+        type = "SSD"
         size = 50
       }
     )
 
     data_volumes = optional(list(object({
-      type          = optional(string, "ESSD")
+      type          = optional(string, "SSD")
       size          = optional(number, 100)
       extend_params = optional(map(string), null)
       kms_key_id    = optional(string, null)
@@ -580,7 +461,7 @@ variable "node_pools_configuration" {
       })),
       [
         {
-          type = "ESSD"
+          type = "SSD"
           size = 100
         }
       ]

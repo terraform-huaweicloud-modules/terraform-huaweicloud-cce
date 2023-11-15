@@ -28,7 +28,6 @@ module "cce_service" {
   container_network_type = var.container_network_type
   service_network_cidr   = var.service_network_cidr
   cluster_name           = var.cluster_name
-  az_count               = var.az_count
   cluster_tags           = var.cluster_tags
 
   # Public configuration
@@ -37,11 +36,7 @@ module "cce_service" {
   availability_zones = var.availability_zones
 
   # Node configuration
-  node_name                       = var.node_name
-  node_flavor                     = var.node_flavor
-  node_password                   = var.node_password != null ? var.node_password : try(random_password.this[0].result, "")
-  node_data_volumes_configuration = var.node_data_volumes_configuration
-  node_tags                       = var.node_tags
+  nodes_configuration = var.nodes_configuration
 
   node_pools_configuration = var.node_pools_configuration
 }
