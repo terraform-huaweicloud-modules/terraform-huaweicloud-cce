@@ -86,7 +86,7 @@ resource "huaweicloud_cce_node" "this" {
   flavor_id         = lookup(element(var.nodes_configuration, count.index), "flavor_id") != null ? lookup(element(var.nodes_configuration, count.index), "flavor_id") : data.huaweicloud_compute_flavors.this.ids[0]
   os                = lookup(element(var.nodes_configuration, count.index), "os")
   runtime           = lookup(element(var.nodes_configuration, count.index), "runtime")
-  availability_zone = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
+  availability_zone = lookup(element(var.nodes_configuration, count.index), "availability_zone") != null ? lookup(element(var.nodes_configuration, count.index), "availability_zone"): length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
   subnet_id         = var.subnet_id
   fixed_ip          = lookup(element(var.nodes_configuration, count.index), "fixed_ip")
   ecs_group_id      = lookup(element(var.nodes_configuration, count.index), "ecs_group_id")
@@ -209,7 +209,7 @@ resource "huaweicloud_cce_node_pool" "this" {
   initial_node_count       = lookup(element(var.node_pools_configuration, count.index), "initial_node_count")
   flavor_id                = lookup(element(var.node_pools_configuration, count.index), "flavor_id") != null ? lookup(element(var.node_pools_configuration, count.index), "flavor_id") : data.huaweicloud_compute_flavors.this.ids[0]
   type                     = lookup(element(var.node_pools_configuration, count.index), "type")
-  availability_zone        = length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
+  availability_zone        = lookup(element(var.node_pools_configuration, count.index), "availability_zone") != null ? lookup(element(var.node_pools_configuration, count.index), "availability_zone") : length(var.availability_zones) > 0 ? var.availability_zones[0] : data.huaweicloud_availability_zones.this[0].names[0]
   os                       = lookup(element(var.node_pools_configuration, count.index), "os")
   key_pair                 = lookup(element(var.node_pools_configuration, count.index), "key_pair")
   password                 = lookup(element(var.node_pools_configuration, count.index), "password")

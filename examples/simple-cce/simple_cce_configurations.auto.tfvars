@@ -28,6 +28,7 @@ nodes_configuration = [
     os                 = "EulerOS 2.9"
     initial_node_count = 1
     password           = "Test@123"
+    availability_zone = "cn-north-4c"
   }
 ]
 
@@ -38,5 +39,6 @@ node_pools_configuration = [
     os                 = "EulerOS 2.9"
     initial_node_count = 1
     password           = "Test@123"
+    availability_zone = "cn-north-4b"
   }
 ]
