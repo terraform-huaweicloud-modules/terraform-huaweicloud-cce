@@ -455,18 +455,13 @@ variable "node_pools_configuration" {
     )
 
     data_volumes = optional(list(object({
-      type          = optional(string, "SSD")
-      size          = optional(number, 100)
+      type          = optional(string, null)
+      size          = optional(number, null)
       extend_params = optional(map(string), null)
       kms_key_id    = optional(string, null)
       dss_pool_id   = optional(string, null)
       })),
-      [
-        {
-          type = "SSD"
-          size = 100
-        }
-      ]
+      []
     )
 
     storage = optional(object({
